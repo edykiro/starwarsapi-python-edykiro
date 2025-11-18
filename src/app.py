@@ -2,13 +2,14 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
+from sqlalchemy import select
 from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Planet, Character, Starship, Favorite
 #from models import Person
 
 app = Flask(__name__)
@@ -36,14 +37,37 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
+@app.route('/users', methods=['GET']) #GET es opcional
+def get_all_users():
+    test = db.session.execute(select(User)).scalars()
+    return "funciona"
 
-    return jsonify(response_body), 200
+@app.route('/planets', methods=['GET']) #GET es opcional
+def get_all_planets():
+    test = db.session.execute(select(Planet)).scalars()
+    return test
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
