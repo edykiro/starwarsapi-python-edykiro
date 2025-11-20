@@ -38,18 +38,33 @@ def sitemap():
     return generate_sitemap(app)
 
 
+
+
+
 @app.route('/users', methods=['GET']) #GET es opcional
 def get_all_users():
-    test = db.session.execute(select(User)).scalars()
-    return "funciona"
+    data = db.session.execute(select(User)).scalars()
+    result = list(map(lambda item: item.serialize(),data))
+    response_body={"results": result}
+    print("hello")
+    return jsonify(response_body),200
 
 @app.route('/planets', methods=['GET']) #GET es opcional
 def get_all_planets():
-    test = db.session.execute(select(Planet)).scalars()
+    data = list(db.session.execute(select(Planet)).scalars())
+    
+    
     return test
 
 
+@app.route('/user', methods=['GET']) #GET es opcional
+def get_single_user():
+    user_id = request.args.get("user_id")
+    test = db.session.execute(select(User)).scalars()
+    print(f"user_id es {user_id}")
+    print(test)
 
+    return "funciona"
 
 
 

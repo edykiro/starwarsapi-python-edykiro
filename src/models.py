@@ -1,7 +1,7 @@
 from __future__ import annotations
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, Integer, Text, ForeignKey, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Boolean, Integer, Text, ForeignKey, DateTime, func, Column, Table
+from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 from typing import List, Optional
 
 db = SQLAlchemy()
@@ -22,7 +22,8 @@ class User(db.Model):
     updated_at:   Mapped[Optional[DateTime]] = mapped_column(
         DateTime, onupdate=func.now())
 
-    favorites: Mapped[List["Favorite"]] = relationship(back_populates="user")
+    #Relations
+    favorites: Mapped["Favorite"] = relationship(back_populates="user")
 
     def serialize(self) -> dict:
         return {
@@ -47,13 +48,16 @@ class Planet(db.Model):
     updated_at: Mapped[Optional[DateTime]] = mapped_column(
         DateTime, onupdate=func.now())
 
-    favorites: Mapped[List["Favorite"]] = relationship(back_populates="planet")
+    #Relations
+    
+
 
     def serialize(self):
         return {
             "id":        self.id,
             "name":  self.name,
             "mass":     self.mass,
+            "description": self.description,
             "is_active": self.is_active,
             "created_at": self.created_at,
         }
@@ -70,8 +74,7 @@ class Character(db.Model):
     updated_at: Mapped[Optional[DateTime]] = mapped_column(
         DateTime, onupdate=func.now())
     
-    favorites: Mapped[List["Favorite"]] = relationship(
-        back_populates="character")
+
 
     def serialize(self):
         return {
@@ -81,6 +84,13 @@ class Character(db.Model):
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
+
+favorites_starships = Table (
+    "favorites_starships",
+    db.metadata,
+    Column("favorite_id",ForeignKey("favorites.id")),
+    Column("starship_id",ForeignKey("starships.id"))
+)
 
 
 class Starship(db.Model):
@@ -95,9 +105,10 @@ class Starship(db.Model):
         DateTime, server_default=func.now())
     updated_at: Mapped[Optional[DateTime]] = mapped_column(
         DateTime, onupdate=func.now())
-
-    favorites: Mapped[List["Favorite"]] = relationship(
-        back_populates="starship")
+    
+    #Relations
+    
+    
 
     def serialize(self):
         return {
@@ -124,13 +135,8 @@ class Favorite(db.Model):
     created_at: Mapped[Optional[DateTime]] = mapped_column(
         DateTime, server_default=func.now())
 
+    #Relationships
     user: Mapped["User"] = relationship(back_populates="favorites")
-    planet: Mapped[Optional["Planet"]] = relationship(
-        back_populates="favorites")
-    character: Mapped[Optional["Character"]] = relationship(
-        back_populates="favorites")
-    starship:  Mapped[Optional["Starship"]] = relationship(
-        back_populates="favorites")
 
     def serialize(self):
         return {
