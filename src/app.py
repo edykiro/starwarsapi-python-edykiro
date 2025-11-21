@@ -10,14 +10,15 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Planet, Character, Starship, Favorite
-#from models import Person
+# from models import Person
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
+        "postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -28,43 +29,61 @@ CORS(app)
 setup_admin(app)
 
 # Handle/serialize errors like a JSON object
+
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
 # generate sitemap with all your endpoints
+
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
 
+# User endpoints
 
-
-
-
-@app.route('/users', methods=['GET']) #GET es opcional
+@app.route('/users', methods=['GET'])
 def get_all_users():
     data = db.session.execute(select(User)).scalars()
-    result = list(map(lambda item: item.serialize(),data))
-    response_body={"results": result}
+    result = list(map(lambda item: item.serialize(), data))
+    response_body = {"results": result}
     print("hello")
-    return jsonify(response_body),200
+    return jsonify(response_body), 200
 
-@app.route('/planets', methods=['GET']) #GET es opcional
+@app.route('/users/<int:user_id>', methods=['GET'])  
+def get_single_user(user_id):
+    user = db.session.get(User, user_id)
+    return jsonify(user.serialize()), 200
+
+# Planet endpoints
+
+@app.route('/planets', methods=['GET'])
 def get_all_planets():
-    data = list(db.session.execute(select(Planet)).scalars())
+    data = db.session.execute(select(Planet)).scalars()
+    result = list(map(lambda item: item.serialize(), data))
+    response_body = {"results": result}
+    print("hello")
+    return jsonify(response_body), 200
+
+@app.route('/planets/<int:planet_id>', methods=['GET'])  
+def get_single_planet(planet_id):
+    planet = db.session.get(Planet, planet_id)
+    return jsonify(planet.serialize()), 200
     
+# Starship endpoints
     
-    return test
-
-
-@app.route('/user', methods=['GET']) #GET es opcional
-def get_single_user():
-    user_id = request.args.get("user_id")
-    test = db.session.execute(select(User)).scalars()
-    print(f"user_id es {user_id}")
-    print(test)
-
-    return "funciona"
+@app.route('/starships', methods=['GET'])
+def get_all_starships():
+    data = db.session.execute(select(Starship)).scalars()
+    result = list(map(lambda item: item.serialize(), data))
+    response_body = {"results": result}
+    print("hello")
+    return jsonify(response_body), 200
+    
+@app.route('/starships/<int:starship_id>', methods=['GET'])  
+def get_single_starship(starship_id):
+    single_starship = db.session.get(Starship, starship_id)
+    return jsonify(single_starship.serialize()), 200
 
 
 

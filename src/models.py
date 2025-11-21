@@ -35,6 +35,12 @@ class User(db.Model):
             "updated_at": self.updated_at
         }
 
+favorites_planets = Table (
+    "favorites_planets",
+    db.metadata,
+    Column("favorite_id",ForeignKey("favorites.id")),
+    Column("planets_id",ForeignKey("planets.id"))
+)
 
 class Planet(db.Model):
     __tablename__ = "planets"
@@ -50,18 +56,21 @@ class Planet(db.Model):
 
     #Relations
     
-
-
     def serialize(self):
         return {
             "id":        self.id,
             "name":  self.name,
             "mass":     self.mass,
             "description": self.description,
-            "is_active": self.is_active,
-            "created_at": self.created_at,
+            "created_at": self.created_at
         }
 
+favorites_characters = Table (
+    "favorites_characters",
+    db.metadata,
+    Column("favorite_id",ForeignKey("favorites.id")),
+    Column("characters_id",ForeignKey("characters.id"))
+)
 
 class Character(db.Model):
     __tablename__ = "characters"
@@ -74,8 +83,8 @@ class Character(db.Model):
     updated_at: Mapped[Optional[DateTime]] = mapped_column(
         DateTime, onupdate=func.now())
     
-
-
+    #Relations
+    
     def serialize(self):
         return {
             "id": self.id,
@@ -108,8 +117,6 @@ class Starship(db.Model):
     
     #Relations
     
-    
-
     def serialize(self):
         return {
             "id": self.id,
@@ -136,7 +143,13 @@ class Favorite(db.Model):
         DateTime, server_default=func.now())
 
     #Relationships
+    
     user: Mapped["User"] = relationship(back_populates="favorites")
+    planets:Mapped[List[Planet]]=relationship(secondary=favorites_planets)
+    characters:Mapped[List[Character]]=relationship(secondary=favorites_characters)
+    starships:Mapped[List[Starship]]=relationship(secondary=favorites_starships)
+
+    
 
     def serialize(self):
         return {
