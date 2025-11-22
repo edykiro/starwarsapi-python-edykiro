@@ -42,6 +42,18 @@ def sitemap():
 
 # User endpoints
 
+@app.route('/users', methods=["POST"])
+def crear_usuario():
+    data = request.get_json()
+    user = User(
+        email = data.get('email'),
+        username = data.get('username')
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user.serialize(), 200
+
+
 @app.route('/users', methods=['GET'])
 def get_all_users():
     data = db.session.execute(select(User)).scalars()
