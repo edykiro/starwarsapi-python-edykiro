@@ -134,11 +134,6 @@ class Favorite(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"), nullable=False)
-    planet_id: Mapped[Optional[int]] = mapped_column(ForeignKey("planets.id"))
-    character_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("characters.id"))
-    starship_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("starships.id"))
     created_at: Mapped[Optional[DateTime]] = mapped_column(
         DateTime, server_default=func.now())
 
@@ -155,8 +150,8 @@ class Favorite(db.Model):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "planet_id": self.planet_id,
-            "character_id": self.character_id,
-            "starship_id": self.starship_id,
+            "planets": [planet.serialize() for planet in self.planets],
+            "characters": [character.serialize() for character in self.characters],
+            "starships": [starship.serialize() for starship in self.starships],
             "created_at": self.created_at
         }
