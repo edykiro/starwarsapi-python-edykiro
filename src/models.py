@@ -3,6 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, Boolean, Integer, Text, ForeignKey, DateTime, func, Column, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 from typing import List, Optional
+from flask_bcrypt import Bcrypt
+from app import app
+
+bcrypt = Bcrypt(app)
 
 db = SQLAlchemy()
 
@@ -32,8 +36,20 @@ class User(db.Model):
             "email":     self.email,
             "is_active": self.is_active,
             "created_at": self.created_at,
-            "updated_at": self.updated_at
+            "updated_at": self.updated_at,
         }
+    
+    #HASHEO DE CONTRASEÑA
+    
+    def set_password(self, password):
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.password_hash=hashed_password
+        return "contraseña hasheada guardada exitosamente"
+        
+    def check_password(self, password):
+        is_valid = bcrypt.check_password_hash(self.password_hash, password)
+        return is_valid
+        
 
 favorites_planets = Table (
     "favorites_planets",

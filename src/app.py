@@ -51,12 +51,41 @@ def crear_usuario():
     )
     db.session.add(user)
     db.session.commit()
+    
+    user.set_password()
+    
     return user.serialize(), 200
 
-@app.route('/users', methods=['GET'])
-def get_all_users():
-    data = db.session.execute(select(User)).scalars()
+#ABK
 
+@app.route('/users', methods=['POST'])
+def get_all_users():
+    body = request.get_json()#se manda un body con username y password del front
+    username = body.get("username", None)
+    password = body.get("password")
+    if not username:
+        return jsonify({"message": "username is a required field"}),400
+    
+    user = db.session.execute(select(User).where(User.username==username)).scalars().first()
+
+    if not user:
+        return jsonify({"message":"user not found"}),404
+
+    if not user.check_password(password):
+        return jsonify({"message":"Bad credentials"}),400
+    
+#ABK
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     result = list(map(lambda item: item.serialize(), data))
     print(result[0])
     
@@ -170,13 +199,18 @@ def create_character():
     db.session.commit()
     return character.serialize(), 200
 
-@app.route('/characters', methods=['GET'])
-def get_all_characters():
-    data = db.session.execute(select(Character)).scalars()
-    result = list(map(lambda item: item.serialize(), data))
-    response_body = {"results": result}
-    print("hello")
-    return jsonify(response_body), 200
+@app.route('/users/favorites/<int:user_id>', methods=['GET'])
+def get_user_favorites(user_id):
+    print(user_id)
+    favorite = db.session.execute(
+        select(Favorite).where(Favorite.user_id == user_id)
+    ).scalars().one_or_none()
+    
+    if not favorite:
+        return jsonify({"message": "No favorites found for this user"}), 404
+    
+    print(favorite.serialize())
+    return jsonify(favorite.serialize()), 200
     
 @app.route('/characters/<int:character_id>', methods=['GET'])  
 def get_single_character(character_id):
